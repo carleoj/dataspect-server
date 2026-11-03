@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Resources\UserResource;
 use App\Http\Controllers\DatasetController;
+use App\Http\Controllers\DatasetAnalysisController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -22,4 +23,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dataset Operations
     Route::get('/datasets', [DatasetController::class, 'index']);
+    Route::get('/datasets/{dataset}/overview', [DatasetAnalysisController::class, 'overview']);
 });
