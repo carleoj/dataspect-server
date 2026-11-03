@@ -31,6 +31,17 @@ class UserController extends Controller
         return response()->noContent();
     }
 
+    public function updateName(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255']
+        ]);
+
+        $request->user()->update($validated);
+
+        return response()->noContent();
+    }
+
     public function destroy(string $id)
     {
         //
