@@ -13,6 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'analyzer' => [
+        'url' => env('ANALYZER_URL', 'http://127.0.0.1:8001'),
+        'key' => env('ANALYZER_KEY'),
+    ],
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
