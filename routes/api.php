@@ -18,10 +18,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::put('/user/password', [UserController::class, 'updatePassword']);
     Route::put('/user/name', [UserController::class, 'updateName']);
-    Route::put('/user', fn (Request $request) => new UserResource($request->user()));
+    Route::put('/user', fn(Request $request) => new UserResource($request->user()));
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Dataset Operations
     Route::get('/datasets', [DatasetController::class, 'index']);
     Route::get('/datasets/{dataset}/overview', [DatasetAnalysisController::class, 'overview']);
+    Route::get('/datasets/{dataset}/column-types', [DatasetAnalysisController::class, 'columnTypes']);
+    Route::get('/datasets/{dataset}/distributions', [DatasetAnalysisController::class, 'distributions']);
+    Route::get('/datasets/{dataset}/columns', [DatasetAnalysisController::class, 'columns']);
+    Route::get('/datasets/{dataset}/correlation', [DatasetAnalysisController::class, 'correlation']);
 });
