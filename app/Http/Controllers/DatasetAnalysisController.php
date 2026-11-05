@@ -7,6 +7,7 @@ use App\Http\Resources\DatasetColumnTypesResource;
 use App\Http\Resources\DatasetCorrelationResource;
 use App\Http\Resources\DatasetDistributionsResource;
 use App\Http\Resources\DatasetOverviewResource;
+use App\Http\Resources\DatasetHealthResource;
 use Illuminate\Http\Request;
 
 class DatasetAnalysisController extends Controller
@@ -39,5 +40,10 @@ class DatasetAnalysisController extends Controller
     private function owned(Request $request, string $id)
     {
         return $request->user()->datasets()->findOrFail($id);
+    }
+
+    public function health(Request $request, string $dataset)
+    {
+        return new DatasetHealthResource($this->owned($request, $dataset));
     }
 }
