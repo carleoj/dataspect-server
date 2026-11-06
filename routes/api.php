@@ -29,4 +29,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/datasets/{dataset}/columns', [DatasetAnalysisController::class, 'columns']);
     Route::get('/datasets/{dataset}/correlation', [DatasetAnalysisController::class, 'correlation']);
     Route::get('/datasets/{dataset}/health', [DatasetAnalysisController::class, 'health']);
+    Route::get('/datasets/{dataset}/missing', [DatasetAnalysisController::class, 'missing']);
 });
