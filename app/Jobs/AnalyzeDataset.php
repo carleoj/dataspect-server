@@ -6,10 +6,11 @@ use App\Models\Dataset;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Queue\SerializesModels;
 
 class AnalyzeDataset implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SerializesModels;
 
     public int $tries = 1;
     public int $timeout = 600;
