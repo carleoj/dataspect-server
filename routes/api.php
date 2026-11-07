@@ -30,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/datasets/{dataset}/correlation', [DatasetAnalysisController::class, 'correlation']);
     Route::get('/datasets/{dataset}/health', [DatasetAnalysisController::class, 'health']);
     Route::get('/datasets/{dataset}/missing', [DatasetAnalysisController::class, 'missing']);
+    Route::patch('/datasets/{dataset}', [DatasetController::class, 'update']);
+    Route::delete('/datasets/{dataset}', [DatasetController::class, 'destroy']);
+    Route::post('/datasets/{dataset}/reanalyze', [DatasetController::class, 'reanalyze']);
 
     // Add new dataset
     Route::post('/datasets', [DatasetController::class, 'store']);

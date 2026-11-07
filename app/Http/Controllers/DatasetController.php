@@ -8,6 +8,7 @@ use App\Jobs\AnalyzeDataset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Requests\Dataset\RenameDatasetRequest;
 
 class DatasetController extends Controller
 {
@@ -70,5 +71,37 @@ class DatasetController extends Controller
         }
 
         return $best;
+    }
+
+    public function update(RenameDatasetRequest $request, string $dataset)
+    {
+        $dataset = $request->user()->datasets()->findOrFail($dataset);
+        $dataset->update(['name' => $request->validated('name')]);
+
+        return new DatasetResource($dataset);
+    }
+
+    public function destroy(Request $request, string $dataset)
+    {
+        $dataset = $request->user()->datasets()->findOrFail($dataset);
+
+        Storage::disk('local')->delete($dataset->path); 
+        $dataset->delete();
+
+        return response()->noContent();
+    }
+
+    public function reanalyze(Request $request, string $dataset)
+    {
+        $dataset = $request->user()->datasets()->findOrFail($dataset);
+
+        if ($dataset->status === 'processing') {
+            abort(409, 'This dataset is already being analyzed.');
+        }
+
+        $dataset->update(['status' => 'pending']);
+        AnalyzeDataset::dispatch($dataset);
+
+        return response()->noContent(202);
     }
 }

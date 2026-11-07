@@ -18,13 +18,16 @@ class DatasetResource extends JsonResource
             'rows'          => $this->row_count ?? 0,
             'columns'       => $this->column_count ?? 0,
             'sizeLabel'     => Number::fileSize($this->size_bytes, precision: 1),
+            'sizeBytes'     => $this->size_bytes,
             'uploadedLabel' => $this->uploadedLabel(),
+            'uploadedAt'    => $this->created_at->toIso8601String(),
             'status'        => $this->status,
             'health'        => match (true) {
                 $this->health_score === null              => null,
                 $this->health_score >= self::HEALTHY_AT   => 'healthy',
                 default                                   => 'needs_attention',
             },
+            'healthScore'   => $this->health_score,
         ];
     }
 
