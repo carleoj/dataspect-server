@@ -56,7 +56,7 @@ server {
     index index.php;
 
     location / {
-        # Handle CORS preflight requests directly in Nginx
+        # Handle CORS preflight requests directly in Nginx  
         if ($request_method = 'OPTIONS') {
             add_header 'Access-Control-Allow-Origin' 'https://dataspect-six.vercel.app' always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
