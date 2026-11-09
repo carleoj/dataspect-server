@@ -1,4 +1,3 @@
-
 FROM php:8.3-fpm
 
 # Install system dependencies and Nginx
@@ -29,7 +28,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Laravel working directory
 WORKDIR /var/www/html
 
-# Copy application
+# Copy application files
 COPY . .
 
 # Install production dependencies
@@ -47,7 +46,7 @@ RUN mkdir -p storage/framework/cache \
              bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Configure Nginx
+# Configure Nginx with built-in CORS preflight handling
 RUN rm -f /etc/nginx/sites-enabled/default \
     && cat > /etc/nginx/conf.d/default.conf <<'EOF'
 server {
@@ -57,6 +56,17 @@ server {
     index index.php;
 
     location / {
+        # Handle CORS preflight requests directly in Nginx
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' 'https://dataspect-six.vercel.app' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, Accept' always;
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
         try_files $uri $uri/ /index.php?$query_string;
     }
 
@@ -75,7 +85,7 @@ server {
 }
 EOF
 
-# Start script
+# Startup script to clear stale caches and launch services
 RUN cat > /usr/local/bin/start-container <<'EOF'
 #!/bin/sh
 set -e
@@ -88,6 +98,11 @@ envsubst '${PORT}' \
     > /tmp/default.conf
 
 mv /tmp/default.conf /etc/nginx/conf.d/default.conf
+
+# Clear and rebuild Laravel caches at runtime to pick up latest .env & cors.php
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
 
 php-fpm -D
 
