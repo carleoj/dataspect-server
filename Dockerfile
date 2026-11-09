@@ -55,15 +55,13 @@ server {
     root /var/www/html/public;
     index index.php;
 
+    add_header 'Access-Control-Allow-Origin' 'https://dataspect-six.vercel.app' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, Accept' always;
+    add_header 'Access-Control-Max-Age' 1728000 always;
+
     location / {
-        # Handle CORS preflight requests directly in Nginx  
         if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' 'https://dataspect-six.vercel.app' always;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, Accept' always;
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain charset=UTF-8';
-            add_header 'Content-Length' 0;
             return 204;
         }
 
