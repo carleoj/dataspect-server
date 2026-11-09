@@ -8,7 +8,7 @@ return [
 
     'allowed_origins' => [
         'http://localhost:3000',
-        'https://dataspect-six.vercel.app/'
+        'https://dataspect-six.vercel.app'
     ],
 
     'allowed_origins_patterns' => [],
