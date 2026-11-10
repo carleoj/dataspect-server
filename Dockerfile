@@ -49,6 +49,12 @@ RUN mkdir -p storage/framework/cache \
 # Configure Nginx
 RUN rm -f /etc/nginx/sites-enabled/default \
     && cat > /etc/nginx/conf.d/default.conf <<'EOF'
+map $http_origin $cors_origin {
+    default "";
+    "http://localhost:3000" $http_origin;
+    "https://dataspect-six.vercel.app" $http_origin;
+}
+
 server {
     listen 0.0.0.0:${PORT};
     server_name _;
@@ -56,6 +62,14 @@ server {
     index index.php;
 
     location / {
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' $cors_origin always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, Accept' always;
+            add_header 'Access-Control-Max-Age' 1728000 always;
+            return 204;
+        }
+
         try_files $uri $uri/ /index.php?$query_string;
     }
 
