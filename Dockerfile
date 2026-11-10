@@ -80,6 +80,8 @@ server {
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
+        add_header 'Access-Control-Allow-Origin' $cors_origin always;
+        add_header 'Vary' 'Origin' always;
     }
 
     location ~ /\. {
