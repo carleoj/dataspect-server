@@ -46,7 +46,7 @@ RUN mkdir -p storage/framework/cache \
              bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Configure Nginx with built-in CORS preflight handling
+# Configure Nginx
 RUN rm -f /etc/nginx/sites-enabled/default \
     && cat > /etc/nginx/conf.d/default.conf <<'EOF'
 server {
@@ -55,16 +55,7 @@ server {
     root /var/www/html/public;
     index index.php;
 
-    add_header 'Access-Control-Allow-Origin' 'https://dataspect-six.vercel.app' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
-    add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, Accept' always;
-    add_header 'Access-Control-Max-Age' 1728000 always;
-
     location / {
-        if ($request_method = 'OPTIONS') {
-            return 204;
-        }
-
         try_files $uri $uri/ /index.php?$query_string;
     }
 
