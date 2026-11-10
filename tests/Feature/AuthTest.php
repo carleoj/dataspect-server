@@ -29,6 +29,25 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
+    public function test_login_rejects_a_short_password(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'user@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => '1',
+        ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
     public function test_login_creates_a_token_only_for_the_correct_password(): void
     {
         $user = User::factory()->create([
