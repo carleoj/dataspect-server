@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -30,12 +31,16 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function authenticate(): void
+    public function authenticate(): User
     {
-        if (! Auth::attempt($this->only('email', 'password'))) {
+        $user = User::where('email', $this->string('email'))->first();
+
+        if ($user === null || ! Hash::check($this->string('password'), $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
+
+        return $user;
     }
 }
