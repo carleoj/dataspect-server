@@ -14,7 +14,7 @@ return [
     |
     */
     'analyzer' => [
-        'url' => env('ANALYZER_URL', 'http://127.0.0.1:8001'),
+        'url' => env('ANALYZER_URL'),
         'key' => env('ANALYZER_KEY'),
     ],
 

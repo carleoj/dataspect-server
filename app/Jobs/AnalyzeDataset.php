@@ -6,6 +6,7 @@ use App\Models\Dataset;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\SerializesModels;
 
 class AnalyzeDataset implements ShouldQueue
@@ -21,16 +22,33 @@ class AnalyzeDataset implements ShouldQueue
     {
         $this->dataset->update(['status' => 'processing']);
 
-        $result = Http::withHeaders(['X-API-Key' => config('services.analyzer.key')])
+        // 1. Get the file stream or contents directly from Neon Object Storage
+        $fileStream = Storage::disk('s3')->readStream($this->dataset->path);
+
+        if (!$fileStream) {
+            throw new \Exception("Could not read dataset file from S3: {$this->dataset->path}");
+        }
+
+        // 2. Send the file securely via multipart/form-data to your analyzer service
+        $response = Http::withHeaders(['X-API-Key' => config('services.analyzer.key')])
             ->timeout(540)
+            ->attach(
+                'file', // The form field name expected by your analyzer service
+                $fileStream,
+                basename($this->dataset->path)
+            )
             ->post(config('services.analyzer.url') . '/analyze', [
-                'path'      => $this->dataset->path,
                 'delimiter' => data_get($this->dataset->options, 'delimiter', ','),
                 'header'    => data_get($this->dataset->options, 'header', true),
-            ])
-            ->throw()
-            ->json();
+            ]);
 
+        if (is_resource($fileStream)) {
+            fclose($fileStream);
+        }
+
+        $result = $response->throw()->json();
+
+        // 3. Update the dataset with the analysis results
         $this->dataset->update([
             'row_count'    => $result['row_count'],
             'column_count' => $result['column_count'],
