@@ -1,6 +1,6 @@
 FROM php:8.3-fpm
 
-# Install system dependencies and Nginx
+# Install system dependencies, PHP extensions, and Nginx in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     gettext-base \
@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libonig-dev \
     libxml2-dev \
     libcurl4-openssl-dev \
+    libicu-dev \
     unzip \
+    && docker-php-ext-configure intl \
     && docker-php-ext-install \
         pdo_pgsql \
         pgsql \
@@ -19,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         zip \
         xml \
         curl \
+        intl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,7 +34,7 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Install production dependencies
+# Install production dependencies (now with intl extension fully present)
 RUN composer install \
     --no-dev \
     --no-interaction \
