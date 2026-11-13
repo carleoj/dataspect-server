@@ -26,7 +26,14 @@ class DatasetController extends Controller
         $name = Str::limit($file->getClientOriginalName(), 250, '');
         $size = $file->getSize();
 
-        $path = $file->storeAs("datasets/{$user->id}", Str::uuid() . '.csv', 'local');
+        $path = "datasets/{$user->id}/" . Str::uuid() . '.csv';
+
+        // 1. Upload directly to Neon Object Storage (s3 disk)
+        Storage::disk('s3')->putFileAs(
+            "datasets/{$user->id}",
+            $file,
+            basename($path)
+        );
 
         $dataset = $user->datasets()->create([
             'name'              => $name,
@@ -37,7 +44,7 @@ class DatasetController extends Controller
             'options'           => [
                 'delimiter' => $this->resolveDelimiter(
                     $request->input('delimiter', 'auto'),
-                    Storage::disk('local')->path($path),
+                    $path, // Pass the storage path instead of a local file path
                 ),
                 'header'    => $request->boolean('header', true),
             ],
@@ -48,16 +55,19 @@ class DatasetController extends Controller
         return (new DatasetResource($dataset))->response()->setStatusCode(201);
     }
 
-    private function resolveDelimiter(string $choice, string $absolutePath): string
+    private function resolveDelimiter(string $choice, string $storagePath): string
     {
         if (isset(self::DELIMITERS[$choice])) {
             return self::DELIMITERS[$choice];
         }
 
-        $handle = fopen($absolutePath, 'r');
-        $line = $handle ? (fgets($handle, 65536) ?: '') : '';
-        if ($handle) {
-            fclose($handle);
+        // Read the first chunk of the file safely from Neon Object Storage (S3)
+        $stream = Storage::disk('s3')->readStream($storagePath);
+        $line = '';
+        
+        if ($stream) {
+            $line = fgets($stream, 65536) ?: '';
+            fclose($stream);
         }
 
         $best = ',';
@@ -85,7 +95,8 @@ class DatasetController extends Controller
     {
         $dataset = $request->user()->datasets()->findOrFail($dataset);
 
-        Storage::disk('local')->delete($dataset->path); 
+        // 2. Delete the file from Neon Object Storage instead of local storage
+        Storage::disk('s3')->delete($dataset->path); 
         $dataset->delete();
 
         return response()->noContent();
