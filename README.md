@@ -41,6 +41,13 @@ php artisan boost:install
 
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
+## Render deployment
+
+For a native Render web service, use `bash scripts/start-render.sh` as the
+start command. It runs migrations, starts the database-backed queue worker,
+and serves the API so uploaded datasets are sent to the analyzer instead of
+remaining queued.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

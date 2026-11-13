@@ -8,11 +8,16 @@
 /.codex
 /.cursor/
 /.idea
+.agents
+/.agents
+AGENTS.md
+CLAUDE.md
 /.nova
 /.phpunit.cache
 /.vscode
 /.zed
 /auth.json
+/.claude
 /node_modules
 /public/build
 /public/fonts-manifest.dev.json
