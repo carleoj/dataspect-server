@@ -22,18 +22,16 @@ class AnalyzeDataset implements ShouldQueue
     {
         $this->dataset->update(['status' => 'processing']);
 
-        // 1. Get the file stream or contents directly from Neon Object Storage
         $fileStream = Storage::disk('s3')->readStream($this->dataset->path);
 
         if (!$fileStream) {
             throw new \Exception("Could not read dataset file from S3: {$this->dataset->path}");
         }
 
-        // 2. Send the file securely via multipart/form-data to your analyzer service
         $response = Http::withHeaders(['X-API-Key' => config('services.analyzer.key')])
             ->timeout(540)
             ->attach(
-                'file', // The form field name expected by your analyzer service
+                'file', 
                 $fileStream,
                 basename($this->dataset->path)
             )
@@ -48,7 +46,6 @@ class AnalyzeDataset implements ShouldQueue
 
         $result = $response->throw()->json();
 
-        // 3. Update the dataset with the analysis results
         $this->dataset->update([
             'row_count'    => $result['row_count'],
             'column_count' => $result['column_count'],
