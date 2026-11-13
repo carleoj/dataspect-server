@@ -114,7 +114,9 @@ php artisan cache:clear
 
 php-fpm -D
 
-php artisan queue:work --timeout=600 &
+if [ "${RUN_ANALYSIS_WORKER:-false}" = "true" ]; then
+    php artisan queue:work --timeout=600 &
+fi
 
 exec nginx -g 'daemon off;'
 EOF
