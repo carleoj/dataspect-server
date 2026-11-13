@@ -114,8 +114,6 @@ php artisan cache:clear
 
 php-fpm -D
 
-php artisan queue:work --timeout=600 &
-
 exec nginx -g 'daemon off;'
 EOF
 

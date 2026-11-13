@@ -44,9 +44,9 @@ Boost provides your agent 15+ tools and skills that help agents build Laravel ap
 ## Render deployment
 
 For a native Render web service, use `bash scripts/start-render.sh` as the
-start command. It runs migrations, starts the database-backed queue worker,
-and serves the API so uploaded datasets are sent to the analyzer instead of
-remaining queued.
+start command. For Docker deployments, keep the web service on the
+Dockerfile's default command and create a separate Render Background Worker
+with `php artisan queue:work --sleep=3 --tries=1 --timeout=600`.
 
 ## Contributing
 
