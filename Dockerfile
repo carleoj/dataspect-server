@@ -119,7 +119,7 @@ if [ "${RUN_ANALYSIS_WORKER:-false}" = "true" ]; then
   echo "Starting in-container queue worker"
   (
     while true; do
-      su -s /bin/sh www-data -c "php artisan queue:work --tries=1 --timeout=600 --sleep=3 --max-time=1800" || true
+      su -s /bin/sh www-data -c "/usr/local/bin/php artisan queue:work --tries=1 --timeout=600 --sleep=3 --max-time=1800" || true
       sleep 2
     done
   ) &
