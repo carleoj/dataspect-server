@@ -102,9 +102,8 @@ set -e
 export PORT
 
 envsubst '${PORT}' \
-    < /etc/nginx/conf.d/default.conf \
-    > /tmp/default.conf
-
+  < /etc/nginx/conf.d/default.conf \
+  > /tmp/default.conf
 mv /tmp/default.conf /etc/nginx/conf.d/default.conf
 
 # Clear and rebuild Laravel caches at runtime to pick up latest .env & cors.php
@@ -112,12 +111,21 @@ php artisan config:clear
 php artisan route:clear
 php artisan cache:clear
 
-php-fpm -D
+# artisan ran as root: hand any files it created back to www-data
+chown -R www-data:www-data storage bootstrap/cache
 
+# Free alternative to a Render Background Worker: run the queue worker in this container
 if [ "${RUN_ANALYSIS_WORKER:-false}" = "true" ]; then
-    php artisan queue:work --timeout=600 &
+  echo "Starting in-container queue worker"
+  (
+    while true; do
+      su -s /bin/sh www-data -c "php artisan queue:work --tries=1 --timeout=600 --sleep=3 --max-time=1800" || true
+      sleep 2
+    done
+  ) &
 fi
 
+php-fpm -D
 exec nginx -g 'daemon off;'
 EOF
 

@@ -5,9 +5,9 @@ namespace App\Jobs;
 use App\Models\Dataset;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Queue\SerializesModels;
 
 class AnalyzeDataset implements ShouldQueue
 {
@@ -24,27 +24,25 @@ class AnalyzeDataset implements ShouldQueue
 
         $fileStream = Storage::disk('s3')->readStream($this->dataset->path);
 
-        if (!$fileStream) {
+        if (! $fileStream) {
             throw new \Exception("Could not read dataset file from S3: {$this->dataset->path}");
         }
 
-        $response = Http::withHeaders(['X-API-Key' => config('services.analyzer.key')])
-            ->timeout(540)
-            ->attach(
-                'file', 
-                $fileStream,
-                basename($this->dataset->path)
-            )
-            ->post(config('services.analyzer.url') . '/analyze', [
-                'delimiter' => data_get($this->dataset->options, 'delimiter', ','),
-                'header'    => data_get($this->dataset->options, 'header', true),
-            ]);
-
-        if (is_resource($fileStream)) {
-            fclose($fileStream);
+        try {
+            $result = Http::withHeaders(['X-API-Key' => config('services.analyzer.key')])
+                ->timeout(540)
+                ->attach('file', $fileStream, basename($this->dataset->path))
+                ->post(rtrim(config('services.analyzer.url'), '/') . '/analyze', [
+                    'delimiter' => (string) data_get($this->dataset->options, 'delimiter', ','),
+                    'header'    => data_get($this->dataset->options, 'header', true) ? '1' : '0',
+                ])
+                ->throw()
+                ->json();
+        } finally {
+            if (is_resource($fileStream)) {
+                fclose($fileStream);
+            }
         }
-
-        $result = $response->throw()->json();
 
         $this->dataset->update([
             'row_count'    => $result['row_count'],
