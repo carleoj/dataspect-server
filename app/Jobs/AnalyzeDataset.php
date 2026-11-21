@@ -55,6 +55,11 @@ class AnalyzeDataset implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        $this->dataset->update(['status' => 'failed']);
+        $this->dataset->update([
+            'status'  => 'failed',
+            'options' => array_merge($this->dataset->options ?? [], [
+                'error' => \Illuminate\Support\Str::limit($e->getMessage(), 500),
+            ]),
+        ]);
     }
 }
